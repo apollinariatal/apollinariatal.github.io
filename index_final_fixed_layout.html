@@ -1,0 +1,234 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>StackFuture</title>
+  <link href="https://fonts.googleapis.com/css2?family=Exo+2&display=swap" rel="stylesheet">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: #151515;
+      background-image: url('grain_overlay.png');
+      background-size: cover;
+      font-family: 'Exo 2', sans-serif;
+      color: #151515;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #logo {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      height: 40px;
+    }
+
+    #quote {
+      display: none;
+      font-size: 24px;
+      background: white;
+      border-radius: 16px;
+      padding: 40px;
+      max-width: 600px;
+      width: 90vw;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 0 25px rgba(255, 0, 0, 0.15);
+      z-index: 1;
+    }
+
+    #quote::before {
+  z-index: -1; {
+      content: "";
+      position: absolute;
+      top: -30px;
+      left: -30px;
+      right: -30px;
+      bottom: -30px;
+      background: radial-gradient(circle at center, rgba(255,0,0,0.15), transparent);
+      border-radius: 20px;
+      z-index: -1;
+    }
+
+    #loading {
+      display: none;
+      margin-bottom: 30px;
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    #getQuoteBtn {
+      background-color: #ff0000;
+      color: white;
+      font-size: 18px;
+      padding: 14px 30px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      animation: pulseScale 1.5s infinite alternate;
+    }
+
+    #telegramBtn {
+  margin-top: 30px;
+      display: none;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.6s ease;
+      background-color: white;
+      color: #151515;
+      padding: 14px 30px;
+      font-size: 18px;
+      font-weight: 600;
+      border-radius: 10px;
+      border: none;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    @keyframes pulseScale {
+      0% { transform: scale(1); }
+      100% { transform: scale(1.1); }
+    }
+
+    @keyframes fadeIn {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+
+    @media (max-width: 600px) {
+  body { padding: 20px; }
+      #quote {
+        font-size: 18px;
+        padding: 30px 20px;
+      }
+
+      #getQuoteBtn, #telegramBtn {
+  margin-top: 30px;
+        font-size: 16px;
+        padding: 12px 24px;
+      }
+
+      #logo {
+        height: 32px;
+      }
+    }
+  
+    @keyframes fadeInMove {
+      0% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    </style>
+    
+</head>
+<body onload="localStorage.removeItem('stackFuture-shown');">
+
+  <img src="sense_logo.png" alt="SENSE logo" id="logo" />
+
+  <div id="loading">
+    <img src="loading_animation.png" alt="Загрузка..." style="max-width:240px; animation: pulseScale 1.5s infinite alternate;" />
+  </div>
+
+  <div id="quote"></div>
+
+  <button id="getQuoteBtn" onclick="showRandomQuote()">Погрузиться в StackFuture</button>
+
+  <a id="telegramBtn" href="https://t.me/it_sense" target="_blank">
+    <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 0 24 24" width="20" style="margin-right: 8px;">
+      <path fill="#0088cc" d="M22,2L2,12l5,2l2,6l3-4l5,4L22,2z"/>
+    </svg>
+    Присоединиться к нам в Telegram
+  </a>
+
+  <script>
+    const lang = navigator.language.startsWith('ru') ? 'ru' : 'en';
+
+    const texts = {
+      ru: {
+        button: "Погрузиться в StackFuture",
+        default: "Нажми на кнопку, чтобы получить фразу",
+        telegram: "Присоединиться к нам в Telegram",
+        phrases: [
+          "Ты digital twin, только с характером.",
+          "Ты — спринт без багов. Почти миф, но ты существуешь.",
+          "Ты на стадии рефакторинга карьеры. Не бойся — стабильная версия рядом.",
+          "Ты — npm-пакет, только ещё не опубликовался. Самое интересное впереди.",
+          "Ты как ретроспектива: не всегда предсказуем, но очень важен.",
+          "Ты на уровне senior по выживанию в дедлайнах. Осталось прокачать отдых.",
+          "Ты джун на вид, но внутри — легаси.",
+          "Ты уже не junior, но иногда притворяешься, чтобы не трогали.",
+          "У тебя всё под контролем. Просто иногда контроль — это 'отправил и закрыл вкладку'.",
+          "Ты найдёшь команду, с которой можно спорить по коду и шутить про макароны."
+        ]
+      },
+      en: {
+        button: "Enter StackFuture",
+        default: "Press the button to get your prediction",
+        telegram: "Join us on Telegram",
+        phrases: [
+          "You're a digital twin — but with personality.",
+          "You're a bug-free sprint. A myth? No, a miracle.",
+          "You're refactoring your career. Stable release is coming.",
+          "You're an npm package — not published yet, but full of promise.",
+          "You're like a retro — unexpected, but meaningful.",
+          "You're a senior at surviving deadlines. Just add rest.",
+          "You look junior, but you're pure legacy inside.",
+          "You're not junior, but sometimes you pretend to be left alone.",
+          "You’re in control. Even if that means 'sent it and closed the tab'.",
+          "You’ll find a team to debate code and joke about spaghetti."
+        ]
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('quote').textContent = texts[lang].default;
+      document.getElementById('getQuoteBtn').textContent = texts[lang].button;
+    });
+
+    function showRandomQuote() {
+      const phrases = texts[lang].phrases;
+      const getQuoteBtn = document.getElementById('getQuoteBtn');
+      const telegramBtn = document.getElementById('telegramBtn');
+      const quoteEl = document.getElementById('quote');
+      getQuoteBtn.style.display = 'none';
+      telegramBtn.style.display = 'none';
+      document.getElementById('loading').style.display = 'block';
+
+      setTimeout(() => {
+        const randomIndex = Math.floor(Math.random() * phrases.length);
+        let i = 0;
+        let txt = phrases[randomIndex];
+        let speed = 30;
+        quoteEl.textContent = "";
+        quoteEl.style.display = 'flex';
+        quoteEl.style.alignItems = 'center';
+        quoteEl.style.justifyContent = 'center';
+        function typeWriter() {
+          if (i < txt.length) {
+            quoteEl.textContent += txt.charAt(i);
+            i++;
+            setTimeout(typeWriter, speed);
+          } else {
+            telegramBtn.style.display = 'inline-flex';
+            setTimeout(() => {
+              telegramBtn.style.opacity = '1';
+              telegramBtn.style.transform = 'translateY(0)';
+            }, 200);
+          }
+        }
+        typeWriter();
+
+        document.getElementById('loading').style.display = 'none';
+        localStorage.setItem('stackFuture-shown', 'true');
+      }, 10000);
+    }
+  </script>
+
+</body>
+</html>
