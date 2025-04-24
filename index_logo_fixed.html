@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>StackFuture</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Exo+2&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Exo 2', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #151515;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      gap: 24px;
+      overflow: hidden;
+    }
+
+    #logo {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      height: 40px;
+    }
+
+    #loading {
+      display: none;
+      animation: pulse 1.5s infinite alternate;
+      max-width: 250px;
+    }
+
+    #quote {
+      display: none;
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      font-size: 1.5rem;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 0 30px rgba(255, 0, 0, 0.15);
+      max-width: 90%;
+    }
+
+    #quote::before {
+      content: "";
+      position: absolute;
+      top: -30px; left: -30px; right: -30px; bottom: -30px;
+      background: radial-gradient(circle at center, rgba(255,0,0,0.2), transparent);
+      border-radius: 20px;
+      z-index: -1;
+    }
+
+    #getQuoteBtn {
+      background-color: #ff0000;
+      color: white;
+      font-size: 1.2rem;
+      padding: 16px 32px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      animation: pulse 1.5s infinite alternate;
+    }
+
+    #telegramBtn {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-size: 1rem;
+      padding: 14px 24px;
+      background-color: white;
+      color: #151515;
+      text-decoration: none;
+      border-radius: 10px;
+      animation: fadeIn 1s ease forwards;
+      opacity: 0;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 0.9; }
+      100% { transform: scale(1.05); opacity: 1; }
+    }
+
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+
+    @media (max-width: 600px) {
+      #quote {
+        font-size: 1.1rem;
+        padding: 20px;
+      }
+      #getQuoteBtn {
+        font-size: 1rem;
+        padding: 12px 24px;
+      }
+      #telegramBtn {
+        font-size: 0.95rem;
+        padding: 12px 20px;
+      }
+    }
+  </style>
+</head>
+<body onload="localStorage.removeItem('stackFuture-shown');">
+
+<img src="logo.png" alt="SENSE logo" id="logo" />
+<img src="loading.gif" alt="Загрузка..." id="loading" />
+
+<div id="quote"></div>
+
+<button id="getQuoteBtn" onclick="showRandomQuote()">Погрузиться в StackFuture</button>
+
+<a id="telegramBtn" href="https://t.me/it_sense" target="_blank">
+  <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 0 24 24" width="20">
+    <path fill="#0088cc" d="M22,2L2,12l5,2l2,6l3-4l5,4L22,2z"/>
+  </svg>
+  Присоединиться к нам в Telegram
+</a>
+
+<script>
+  const phrases = ['Ты digital twin, только с характером.', 'Ты — спринт без багов. Почти миф, но ты существуешь.', 'Ты на стадии рефакторинга карьеры. Не бойся — стабильная версия рядом.', 'Ты — npm-пакет, только ещё не опубликовался. Самое интересное впереди.', 'Ты как ретроспектива: не всегда предсказуем, но очень важен.', 'Ты на уровне senior по выживанию в дедлайнах. Осталось прокачать отдых.', 'Ты джун на вид, но внутри — легаси.', 'Ты уже не junior, но иногда притворяешься, чтобы не трогали.', "У тебя всё под контролем. Просто иногда контроль — это 'отправил и закрыл вкладку'.", 'Ты найдёшь команду, с которой можно спорить по коду и шутить про макароны.', 'Ты — микросервис. Независимый, но без тебя всё ломается.', 'Ты аналитик. Просто ещё не придумал, что анализировать.', 'Ты в режиме навигации. Главное — не выйти в корневую папку слишком рано.', 'Ты — agile по жизни: планируешь на день вперёд, но делаешь всё в последний час.', 'Ты говоришь с ChatGPT чаще, чем с HR. И, честно говоря, вам комфортно вместе.', 'Ты готов к следующему шагу. Не обязательно вверх. Главное — вперёд.', 'Ты не обязан быть продуктивным всё время. Но ты уже полезен — просто тем, как думаешь.', 'Ты умеешь находить людей. Даже когда они ещё не уверены, что хотят быть найдены.', 'Твоё внимание к людям делает больше, чем ты думаешь. Даже если никто не говорит об этом вслух.', 'Ты — как чашка чая на утреннем созвоне: тише всех, но теплее всего.', 'Ты выглядишь как резюме, которое хочется открыть.', 'Ты как хороший продукт: не всем понятен сразу, но те, кто понял — не отпускают.', 'Ты — ручка настройки громкости. Ты сам решаешь, насколько включаться.', 'Ты всё ещё умнее нейросети. Особенно, если выспался.', 'Ты как цикличная функция: каждый раз возвращаешься мудрее.', 'Ты не потерян в тасках. Ты просто в режиме drag&drop собственного темпа.', 'Ты встретишь себя в будущем. Он удивится, но скажет: “я знал, что справишься”.', 'Ты откроешь вкладку, которая изменит ход мысли. Она будет случайной. Но очень своевременной.', 'Ты как прозрачный div: не все замечают, но без тебя интерфейс разваливается.', 'Ты — функция восстановления. Просто сегодня ты восстанавливаешь себя.'];
+
+  function showRandomQuote() {
+    document.getElementById('getQuoteBtn').style.display = 'none';
+    document.getElementById('loading').style.display = 'block';
+
+    setTimeout(() => {
+      const phrase = phrases[Math.floor(Math.random() * phrases.length)];
+      const quoteEl = document.getElementById('quote');
+      const telegramBtn = document.getElementById('telegramBtn');
+      let i = 0;
+      quoteEl.textContent = "";
+      quoteEl.style.display = 'block';
+      document.getElementById('loading').style.display = 'none';
+
+      function typeWriter() {
+        if (i < phrase.length) {
+          quoteEl.textContent += phrase.charAt(i);
+          i++;
+          setTimeout(typeWriter, 30);
+        } else {
+          setTimeout(() => {
+            telegramBtn.style.display = 'inline-flex';
+          }, 5000);
+        }
+      }
+      typeWriter();
+    }, 5000);
+  }
+</script>
+
+</body>
+</html>
